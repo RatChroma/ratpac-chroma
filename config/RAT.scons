@@ -101,7 +101,11 @@ for path in g4opts['CPPPATH']:
 del g4opts['CPPPATH']
 env.Append(**g4opts)
 
+
 conf = Configure(env, custom_tests={'CheckCurlConfig' : CheckCurlConfig})
+conf.env.Append(CPPPATH=["/home/tmw/software/include"])
+conf.env.Append(LIBPATH=["/home/tmw/software/lib"])
+
 # Add flags for curl if present
 if conf.CheckCurlConfig():
     conf.env.ParseConfig('curl-config --cflags --libs')
@@ -116,6 +120,10 @@ if conf.CheckLibWithHeader('z','zlib.h','c'):
     conf.env.Append(CPPDEFINES=[('_HAS_Z',1)])
 
 #Build with zmq support if header found
+if "ZMQ_INC_DIR" in os.environ:
+    conf.env.Append(CPPPATH=[os.environ["ZMQ_INC_DIR"]])
+if "ZMQ_LIB_DIR" in os.environ:
+    conf.env.Append(LIBPATH=[os.environ["ZMQ_LIB_DIR"]])
 if conf.CheckLibWithHeader('zmq','zmq.h','c'):
     conf.env.Append(CPPDEFINES=[('_HAS_ZMQ',1)])
 
@@ -130,6 +138,12 @@ if conf.CheckLib('protobuf'):
     conf.env.Append(CPPDEFINES=[('_HAS_PROTOBUF',1)])
     # Protobuf requires c++11
     env.Append(CXXFLAGS=" -std=c++11 -Wno-deprecated-register")
+if "ENABLE_GPROF" in os.environ and os.environ["ENABLE_GPROF"]=="1":
+    conf.env.Append(LINKFLAGS=" -lprofiler")
+    conf.env.Append(CPPDEFINES=[('HAS_GPROF',1)])
+if "ENABLE_HEAPCHK" in os.environ and os.environ["ENABLE_HEAPCHK"]=="1":
+    conf.env.Append(LINKFLAGS=" -ltcmalloc")
+    conf.env.Append(CPPDEFINES=[('HAS_HEAPCHK',1)])
 
 # Build with G4DAE support
 if conf.CheckCXXHeader("G4DAEParser.hh"):
@@ -223,16 +237,6 @@ if opt:
 for pkg in env['ARCHEXTRA']:
     env.Append(**arch[pkg])
 
-# Protobuf headers
-#env.Append(CXXFLAGS=" -std=c++11 -Wno-deprecated-register -I/Users/twongjirad/working/ratchroma/protobuf/include")
-#env.Append(LINKFLAGS=" -L/Users/twongjirad/working/ratchroma/protobuf/lib -lprotobuf")
-#env.Append(CXXFLAGS=" -std=c++11 -Wno-deprecated-register -I/home/nudot/protobuf/include")
-
-env.Append(CXXFLAGS=" -std=c++11  -I/home/nudot/protobuf/include")
-#env.Append(LIBS=" -std=c++11 ")
-env.Append(LINKFLAGS="-L/home/nudot/protobuf/lib")
-env.Append(LIBS="protobuf")
-
 #### Set other useful RAT-specific variables
 
 # Put all intermediate build targets into build/[ROOTARCH] directory
@@ -263,6 +267,5 @@ env.Repository('$RATROOT')
 #
 # env = SConscript('$RATROOT/config/RAT.scons')
 
-#env.Append(LINKFLAGS=" -L/home/nudot/protobuf/lib -lprotobuf -std=c++11")
 
 Return('env')
