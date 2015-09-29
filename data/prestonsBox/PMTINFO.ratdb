@@ -1,0 +1,9 @@
+{
+  name:"PMTINFO",
+  valid_begin: [0,0],
+  valid_end: [0,0],
+  x: [  5.0000 ],
+  y: [  5.0000 ],
+  z: [  5.0000 ],
+  type: [  1 ],
+}

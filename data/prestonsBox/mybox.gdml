@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gdml xmlns:gdml="http://cern.ch/2001/Schemas/GDML"	
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd" >
+
+<define>
+<!-- define some stuff here -->
+</define>
+<materials>
+  <!-- elements we will use -->
+  <element name="nitrogen" formula="N" Z="7">  <atom value="14.0067"/> </element>
+  <element name="oxygen" formula="O" Z="8">  <atom value="15.999"/> </element>
+  <element name="argon" formula="Ar" Z="18"> <atom value="39.9480"/>  </element>
+  <element name="carbon" formula="C" Z="6">  <atom value="12.0107"/>  </element>
+  <element name="hydrogen" formula="H" Z="1">  <atom value="1.0079"/> </element>
+  <element name="chromium" formula="Cr" Z="24"> <atom value="51.9961"/>  </element>
+  <element name="iron" formula="Fe" Z="26"> <atom value="55.8450"/>  </element>
+  <element name="nickel" formula="Ni" Z="28"> <atom value="58.6934"/>  </element>
+
+
+  <material formula=" " name="air">
+    <D value="0.001205" unit="g/cc"/>
+    <D value="0.001205" unit="g/cc"/>
+    <fraction n="0.781154" ref="nitrogen"/>
+    <fraction n="0.209476" ref="oxygen"/>
+    <fraction n="0.00937" ref="argon"/>
+  </material>
+
+  <material formula=" " name="pseudocumene">
+    <D value="0.8758" unit="g/cc"/>
+    <fraction n="0.8994" ref="carbon"/>
+    <fraction n="0.1006" ref="hydrogen"/>
+  </material>
+
+  <material formula=" " name="mineral_oil">
+    <D value="0.77" unit="g/cc"/>
+    <fraction n="0.8563" ref="carbon"/>
+    <fraction n="0.1437" ref="hydrogen"/>
+  </material>
+
+  <material formula=" " name="ppo">
+    <D value="1.06" unit="g/cc"/>
+    <fraction n="0.8142" ref="carbon"/>
+    <fraction n="0.0501" ref="hydrogen"/>
+    <fraction n="0.0633" ref="nitrogen"/>
+    <fraction n="0.0723" ref="oxygen"/>
+  </material>
+
+  <material formula=" " name="scintillator">
+    <D value="0.78" unit="g/cc"/>
+    <fraction n="0.996984" ref="mineral_oil"/>
+    <fraction n="0.001919" ref="pseudocumene"/>
+    <fraction n="0.001097" ref="ppo"/>
+  </material>
+
+  <material name="stainless_steel" formula="stainless_steel">
+    <D value="7.9300" unit="g/cm3"/>
+    <fraction n="0.0010" ref="carbon"/>
+    <fraction n="0.1792" ref="chromium"/>
+    <fraction n="0.7298" ref="iron"/>
+    <fraction n="0.0900" ref="nickel"/>
+  </material>
+
+
+</materials>
+<solids>
+  <!-- our world -->
+  <box name="env"
+       lunit="m"
+       x="5.0"
+       y="5.0"
+       z="5.0"/>
+  <!-- the box -->
+  <box name="somebox"
+       lunit="m"
+       x="1.0"
+       y="1.0"
+       z="1.0" />
+  <!-- volume to be filled -->
+  <box name="subBox"
+       lunit="m"
+       x="0.99"
+       y="0.99"
+       z="0.99"/>
+  <!-- our 'tube' -->
+  <tube name="sometube"
+	lunit="cm"
+	aunit="deg"
+	rmin="0"
+	rmax="3.0"
+	z="0.25"
+	deltaphi="360.0"/>
+</solids>
+
+<structure>
+  <!-- tube volume def -->
+  <volume name="volTube">
+    <materialref ref="scintillator"/>
+    <solidref ref="sometube"/>
+  </volume>
+  
+  <!-- define box contents -->
+  <volume name="volBoxContents">
+    <materialref ref="scintillator"/>
+    <solidref ref="subBox"/>
+    <!-- add tube as physvol-->
+    <physvol name="tube0">
+      <volumeref ref="volTube"/>
+      <!-- slap the tube in the center -->
+      <position name="tube0Pos"
+		unit="m"
+		x="0.5"
+		y="0.5"
+		z="0.5"/>
+    </physvol>
+  </volume>
+
+  <!-- define our container -->
+  <volume name="volSomeBox">
+    <materialref ref="stainless_steel"/>
+    <solidref ref="somebox"/>
+    <physvol name="pvBoxContents">
+      <volumeref ref="volBoxContents"/>
+      <position name="posBoxContents"
+		x="0"
+		y="0"
+		z="0"/>
+    </physvol>
+  </volume>
+
+  <!-- define the world -->
+  <volume name="volEnv">
+    <materialref ref="air"/>
+    <solidref ref="env"/>
+    <physvol name="pvSomeBox">
+      <volumeref ref="volSomeBox"/>
+      <position name="posSomeBox"
+		unit="m"
+		x="0"
+		y="0"
+		z="0"/>
+    </physvol>
+  </volume>
+
+</structure>
+
+<setup name="Default" version="1.0">
+  <world ref="volEnv"/>
+</setup>
+
+</gdml>
